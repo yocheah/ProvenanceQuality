@@ -42,6 +42,14 @@ public class ErrorDetector {
 	private static HashMap<String, HashMap<Integer, Integer>> annoDensityByTypeNoDup = new HashMap<String, HashMap<Integer, Integer>>();
 	private static HashMap<String, Calendar[]> temporalCache = new HashMap<String, Calendar[]>();
 
+	protected void clearStatic() {
+		preventDuplicatesInProcessing.clear();
+		annoStats.clear();
+		annoDensityByType.clear();
+		annoDensityByTypeNoDup.clear();
+		temporalCache.clear();
+	}
+	
 	protected int evaluteEarlyLateRelationship(String cwf, String id,
 			Calendar earlier, Calendar later) {
 		int nErrors = 0;
@@ -164,8 +172,8 @@ public class ErrorDetector {
 				}
 			}
 		}
-//		System.out.println(id + " " + nErrors + " " + nDuplicates + " "
-//				+ nAnnos);
+		// System.out.println(id + " " + nErrors + " " + nDuplicates + " "
+		// + nAnnos);
 		try {
 			FileWriter annoStatsOutput;
 			if (isAnnoFileCreated) {
@@ -403,7 +411,7 @@ public class ErrorDetector {
 						nErrors++;
 					}
 				}
-				
+
 				if (w.getStartTime().isSetExactlyAt()) {
 					try {
 						later = w.getStartTime().getExactlyAt();
@@ -414,7 +422,6 @@ public class ErrorDetector {
 					}
 				}
 
-				
 			}
 
 			nErrors += evaluteEarlyLateRelationship(cwf,
@@ -467,14 +474,14 @@ public class ErrorDetector {
 		return nErrors;
 	}
 
-	public void getAnnoAnalysis() {
+	public void getAnnoAnalysis(String cwf) {
 
 		// Density analysis of annotations for OPM Vertices/Edges
 		DecimalFormat df = new DecimalFormat("#.###");
 
 		for (Object o : annoStats.keySet().toArray()) {
 
-//			System.out.println(o + " - " + annoStats.get(o));
+			// System.out.println(o + " - " + annoStats.get(o));
 		}
 
 		for (Object t : annoDensityByType.keySet().toArray()) {
@@ -491,6 +498,7 @@ public class ErrorDetector {
 			double maxPercentageNoDup = 0;
 
 			System.out.println("\n=========With Duplicates Analysis==========");
+
 			for (Object n : densityByNAnnos.values().toArray()) {
 				totalInGroup += (Integer) n;
 			}
@@ -510,8 +518,31 @@ public class ErrorDetector {
 				System.out.println("Type: " + t + "\tAnnotations: " + n
 						+ "\tOccurence: " + densityByNAnnos.get(n) + "\t"
 						+ df.format(percentage) + "%");
-				if (ratio < 0.05)
+
+				try {
+					FileWriter duplicates;
+					duplicates = new FileWriter(("config/output/dup"), true);
+					if (ratio < 0.05)
+						duplicates.write(cwf + "\tType: " + t
+								+ "\tAnnotations: " + n + "\tOccurence: "
+								+ densityByNAnnos.get(n)
+								+ "\t--- Outlier group detected." + ratio
+								+ "\n");
+					else {
+						duplicates.write(cwf + "\tNo outliers" + "\n");
+					}
+					duplicates.flush();
+
+					duplicates.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if (ratio < 0.05) {
 					System.out.println("\t--- Outlier group detected." + ratio);
+
+				}
+
 			}
 
 			System.out.println("\n=========No Duplicates Analysis==========");
@@ -655,8 +686,9 @@ public class ErrorDetector {
 						+ "<-" + l.toArray()[1]);
 				Calendar[] temporalRange2 = temporalCache.get(l.toArray()[1]
 						+ "<-" + l.toArray()[2]);
-//				System.out.println(temporalRange1[0] + " " + temporalRange1[1]
-//						+ " " + temporalRange2[0] + " " + temporalRange2[1]);
+				// System.out.println(temporalRange1[0] + " " +
+				// temporalRange1[1]
+				// + " " + temporalRange2[0] + " " + temporalRange2[1]);
 				if (temporalRange1[0] != null && temporalRange1[1] != null
 						&& temporalRange2[0] != null
 						&& temporalRange2[1] != null) {

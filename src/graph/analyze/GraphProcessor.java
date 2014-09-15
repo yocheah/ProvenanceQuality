@@ -1099,7 +1099,7 @@ public class GraphProcessor {
 
 		}
 		ErrorDetector errorDetector = new ErrorDetector();
-		errorDetector.getAnnoAnalysis();
+		errorDetector.getAnnoAnalysis(contextWfURI);
 		double graphNodeQScore = 1.0;
 		double nGraphNodeErrors = 0;
 		nGraphNodeErrors = errorDetector.getTemporalAnalysis(contextWfURI);
@@ -1143,7 +1143,7 @@ public class GraphProcessor {
 			System.err
 					.println("Error in writing annotation types to output file.");
 		}
-
+		errorDetector.clearStatic();
 		return graphAttributes;
 	}
 
